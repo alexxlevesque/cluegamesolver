@@ -131,8 +131,3 @@ streamlit run app.py
 MIT License
 
 ---
-
-## 🧠 Author
-
-Alex Levesque
-[LinkedIn]([https://www.linkedin.com](https://github.com/alexxlevesque)) • Queen’s University
