@@ -29,134 +29,41 @@ Inspired by probabilistic models in finance, AI, and information theory, the sys
 
 ## 📊 How the Bayesian Engine Works
 
-For each card \( C \), we estimate:
+For each card $C$, we estimate:
 
-\[
+$$
 P(C \in \text{Envelope} \mid \text{History}) \propto P(C) \times P(\text{Observed Evidence} \mid C \in \text{Envelope})
-\]
+$$
 
 ### Evidence Types & Bayesian Update Rules
 
-| Event Type                          | What It Tells You                                          | Update Rule                                                |
-|------------------------------------|-------------------------------------------------------------|-------------------------------------------------------------|
-| Player shows a known card          | Card is not in the envelope                                | Set \( P(C) = 0 \), renormalize                            |
-| Player shows a hidden card         | One of 3 suggested cards is in hand                        | Multiply each \( P(C) \) by **DecreaseFactor** (e.g. 0.8)  |
-| No one can refute                  | All 3 cards are likely in envelope                         | Multiply each \( P(C) \) by **IncreaseFactor** (e.g. 2.0)  |
+| Event Type                 | What It Tells You                   | Update Rule                                           |
+| -------------------------- | ----------------------------------- | ----------------------------------------------------- |
+| Player shows a known card  | Card is not in the envelope         | Set $P(C) = 0$, renormalize                           |
+| Player shows a hidden card | One of 3 suggested cards is in hand | Multiply each $P(C)$ by **DecreaseFactor** (e.g. 0.8) |
+| No one can refute          | All 3 cards are likely in envelope  | Multiply each $P(C)$ by **IncreaseFactor** (e.g. 2.0) |
 
-📊 How the Bayesian Engine Works
-For each card 
-𝐶
-C, we estimate:
+### Normalization (per category):
 
-𝑃
-(
-𝐶
-∈
-Envelope
-∣
-History
-)
-∝
-𝑃
-(
-𝐶
-)
-×
-𝑃
-(
-Observed Evidence
-∣
-𝐶
-∈
-Envelope
-)
-P(C∈Envelope∣History)∝P(C)×P(Observed Evidence∣C∈Envelope)
-Evidence Types & Bayesian Update Rules
-Event Type	What It Tells You	Update Rule
-Player shows a known card	Card is not in the envelope	Set 
-𝑃
-(
-𝐶
-)
-=
-0
-P(C)=0, renormalize
-Player shows a hidden card	One of 3 suggested cards is in hand	Multiply each 
-𝑃
-(
-𝐶
-)
-P(C) by DecreaseFactor (e.g. 0.8)
-No one can refute	All 3 cards are likely in envelope	Multiply each 
-𝑃
-(
-𝐶
-)
-P(C) by IncreaseFactor (e.g. 2.0)
-
-Normalization (per category):
 After each update:
 
-𝑃
-′
-(
-𝐶
-𝑖
-)
-=
-𝑃
-(
-𝐶
-𝑖
-)
-∑
-𝑗
-=
-1
-𝑛
-𝑃
-(
-𝐶
-𝑗
-)
-for all 
-𝐶
-𝑗
- in the same category
-P 
-′
- (C 
-i
-​
- )= 
-∑ 
-j=1
-n
-​
- P(C 
-j
-​
- )
-P(C 
-i
-​
- )
-​
- for all C 
-j
-​
-  in the same category
+$$
+P'(C_i) = \frac{P(C_i)}{\sum_{j=1}^{n} P(C_j)}
+\quad \text{for all } C_j \text{ in the same category}
+$$
+
 This ensures that suspect, weapon, and room probabilities each sum to 1.
 
-💡 Example: Someone Refutes Suggestion (But You Don’t See the Card)
-Suggestion: Miss Scarlett, Lead Pipe, Study
-Player B refutes, but shows the card to someone else (you don’t see it).
+---
 
-Update strategy: Multiply each of the 3 suggested cards by DecreaseFactor = 0.8, then normalize.
+## 💡 Example: Someone Refutes Suggestion (But You Don’t See the Card)
 
-python
-Copy
-Edit
+**Suggestion:** Miss Scarlett, Lead Pipe, Study
+**Player B refutes**, but shows the card to someone else (you don’t see it).
+
+**Update strategy:** Multiply each of the 3 suggested cards by `DecreaseFactor = 0.8`, then normalize.
+
+```python
 # Before
 Scarlett = 0.167
 Pipe     = 0.167
@@ -175,11 +82,12 @@ Scarlett = 0.133 / 0.968 ≈ 0.137
 Others   = 0.167 / 0.968 ≈ 0.172
 
 # Repeat same normalization for Weapons and Rooms
+```
+
 The result:
 
-Suggested cards become slightly less likely to be in the envelope
-
-Non-suggested cards become slightly more likely (due to normalization)
+* Suggested cards become slightly **less likely** to be in the envelope
+* Non-suggested cards become slightly **more likely** (due to normalization)
 
 ---
 
