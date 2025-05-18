@@ -1,7 +1,3 @@
-Absolutely — here's a detailed, professional-grade **README.md** for your project. It includes an overview, features, architecture, usage, and real Bayesian probability logic. You can paste this directly into your GitHub repo:
-
----
-
 ````markdown
 # 🔍 Bayesian Clue Solver
 
