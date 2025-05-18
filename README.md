@@ -1,4 +1,3 @@
-````markdown
 # 🔍 Bayesian Clue Solver
 
 A real-time probabilistic inference engine designed to beat the game of *Clue* using Bayesian reasoning, soft constraint propagation, and dynamic suggestion tracking. Built to calculate the likelihood of each card being in the murder envelope — and eventually recommend the optimal next move based on current information.
