@@ -59,6 +59,7 @@ This ensures that suspect, weapon, and room probabilities each sum to 1.
 ## 💡 Example: Someone Refutes Suggestion (But You Don’t See the Card)
 
 **Suggestion:** Miss Scarlett, Lead Pipe, Study
+
 **Player B refutes**, but shows the card to someone else (you don’t see it).
 
 **Update strategy:** Multiply each of the 3 suggested cards by `DecreaseFactor = 0.8`, then normalize.
@@ -133,5 +134,5 @@ MIT License
 
 ## 🧠 Author
 
-Jack Flinton
+Alex Levesque
 [LinkedIn]([https://www.linkedin.com](https://github.com/alexxlevesque)) • Queen’s University
