@@ -41,7 +41,7 @@ $$
 | -------------------------- | ----------------------------------- | ----------------------------------------------------- |
 | Player shows a known card  | Card is not in the envelope         | Set $P(C) = 0$, renormalize                           |
 | Player shows a hidden card | One of 3 suggested cards is in hand | Multiply each $P(C)$ by **DecreaseFactor** (e.g. 0.8) |
-| No one can refute          | All 3 cards are likely in envelope  | Multiply each $P(C)$ by **IncreaseFactor** (e.g. 2.0) |
+| No one can refute          | All 3 cards are in envelope (unless the suggestor was bluffing, and has the suggested cards in his own hand) | Multiply each $P(C)$ by **IncreaseFactor** (e.g. 2.0) |
 
 ### Normalization (per category):
 
