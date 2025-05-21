@@ -1,27 +1,51 @@
 # 🔍 Bayesian Clue Solver
 
-A real-time probabilistic inference engine designed to beat the game of *Clue* using Bayesian reasoning, soft constraint propagation, and dynamic suggestion tracking. Built to calculate the likelihood of each card being in the murder envelope — and eventually recommend the optimal next move based on current information.
+Real-time probabilistic inference engines designed to beat the game of *Clue* using Bayesian reasoning, soft constraint propagation, and dynamic suggestion tracking. The main engine is built to calculate the likelihood of each card being in the murder envelope — and eventually recommend the optimal next move based on current information. Other engines are built on human behavior and scenarios to calculate the likelihood of each card being in each player's hand.
 
 ---
 
-## 🧠 Project Overview
+## Main Engine Overview (envelope_probability_engine)
 
 This engine models and updates beliefs about the game's hidden state using Bayesian inference. It tracks all player suggestions, responses, and seen cards, then continuously updates the probability that each suspect, weapon, and room card is in the envelope.
 
 Inspired by probabilistic models in finance, AI, and information theory, the system is designed to:
 - Infer which cards are in the envelope
 - Track certainty over time
+- Maintain separate probability distributions for suspects, weapons, and rooms
 - Guide the user toward strategic suggestions
 - Win *Clue* consistently in fewer than 7 turns
 
 ---
 
-## 🧩 Key Components
+## Bayesian Clue Solver Structure
 
-### EnvelopeProbabilityEngine
-- Tracks and updates probabilities for cards in the solution envelope
-- Implements Bayesian inference for solution prediction
-- Maintains separate probability distributions for suspects, weapons, and rooms
+clue_game_manager.py
+│
+│── application/
+│   └── app.py
+│
+├── engines/
+│   ├── envelope_probability_engine.py ✅
+│   │   - Tracks probability that each card is in the envelope
+│   │   - Updated after each suggestion based on who refuted or didn’t
+│   │
+│   ├── rule_based_inference_engine.py
+│   │   - Repeated refutations → inferred card ownership
+│   │   - Tracks players who frequently refute same cards
+│   │
+│   └── suggestion_pattern_engine.py
+│       - Player suggestion behavior → inferred card ownership
+│       - Frequent suggestions → likely *not* in hand
+│       - Never suggested → *maybe* in hand
+│
+├── trackers/
+│   └── player_card_tracker.py ✅
+│       - Tracks probability of each player holding each card
+│       - Gets updates from inference engines
+
+---
+
+## Other Key Components
 
 ### PlayerCardTracker
 - Tracks probabilities of cards for each player
@@ -41,7 +65,7 @@ Inspired by probabilistic models in finance, AI, and information theory, the sys
 
 ---
 
-## 📊 How the Bayesian Engine Works
+## How the Envelope Probability Engine Works
 
 For each card $C$, we estimate:
 
@@ -70,7 +94,7 @@ This ensures that suspect, weapon, and room probabilities each sum to 1.
 
 ---
 
-## 💡 Example: No One Can Refute a Suggestion
+## Example: No One Can Refute a Suggestion
 
 **Suggestion:** Miss Scarlett, Lead Pipe, Study
 
@@ -100,25 +124,24 @@ The result:
 
 ---
 
-## 🧪 Future Work
+## Future Work
 
-* 🔄 Monte Carlo simulation of possible world states consistent with history
-* 🧭 AI assistant that chooses the optimal next suggestion based on expected entropy reduction
-* 📈 Suggestion effectiveness graph (turns vs. confidence curve)
-* 👥 Multiplayer interface or Discord bot integration
+* Monte Carlo simulation of possible world states consistent with history
+* AI assistant that chooses the optimal next suggestion based on expected entropy reduction
+* Suggestion effectiveness graph (turns vs. confidence curve)
+* Multiplayer interface or Discord bot integration
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 * **Python** for core logic
 * **Streamlit** for interactive UI
 * **Pandas/Numpy** for state management and belief updating
-* *(Optional)* Gurobi / PyMC3 for constraint or sampling expansion
 
 ---
 
-## 🚀 Running the Project
+## Running the Project
 
 ```bash
 # 1. Clone the repo
@@ -134,7 +157,7 @@ streamlit run app.py
 
 ---
 
-## 📜 License
+## License
 
 MIT License
 
