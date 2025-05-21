@@ -17,31 +17,28 @@ Inspired by probabilistic models in finance, AI, and information theory, the sys
 
 ---
 
-## Bayesian Clue Solver Structure
+## Project Structure
 
-clue_game_manager.py
-│
-│── application/
-│   └── app.py
-│
-├── engines/
-│   ├── envelope_probability_engine.py ✅
-│   │   - Tracks probability that each card is in the envelope
-│   │   - Updated after each suggestion based on who refuted or didn’t
-│   │
-│   ├── rule_based_inference_engine.py
-│   │   - Repeated refutations → inferred card ownership
-│   │   - Tracks players who frequently refute same cards
-│   │
-│   └── suggestion_pattern_engine.py
-│       - Player suggestion behavior → inferred card ownership
-│       - Frequent suggestions → likely *not* in hand
-│       - Never suggested → *maybe* in hand
-│
-├── trackers/
-│   └── player_card_tracker.py ✅
-│       - Tracks probability of each player holding each card
-│       - Gets updates from inference engines
+- `clue_game.py`  
+  Main game loop and orchestrator. Integrates all logic engines and trackers.
+
+- `engines/`  
+  Logic engines that analyze game events and generate inferences:
+  
+  - `envelope_probability_engine.py`  
+    Maintains probability distribution over cards in the envelope.
+  
+  - `rule_based_inference_engine.py`  
+    Applies rules like repeated refutations implying ownership.
+  
+  - `suggestion_pattern_engine.py`  
+    Analyzes player suggestion patterns to infer ownership.
+
+- `trackers/`  
+  Components that maintain and update probabilistic knowledge:
+  
+  - `player_card_tracker.py`  
+    Tracks probability distribution of each player holding each card.
 
 ---
 
