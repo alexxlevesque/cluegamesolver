@@ -37,9 +37,20 @@ class ClueProbabilityEngine:
         
         # If no one could refute the suggestion
         elif not responder:
-            # Increase probability of all suggested cards
+            # If no one could refute, these cards MUST be in the solution
             for card in suggested_cards:
-                self._increase_probability(card)
+                if card in SUSPECTS:
+                    # Set this suspect to 1.0 and all others to 0.0
+                    for suspect in SUSPECTS:
+                        self.suspect_probs[suspect] = 1.0 if suspect == card else 0.0
+                elif card in WEAPONS:
+                    # Set this weapon to 1.0 and all others to 0.0
+                    for weapon in WEAPONS:
+                        self.weapon_probs[weapon] = 1.0 if weapon == card else 0.0
+                elif card in ROOMS:
+                    # Set this room to 1.0 and all others to 0.0
+                    for room in ROOMS:
+                        self.room_probs[room] = 1.0 if room == card else 0.0
         
         # Normalize probabilities within each category
         self._normalize_category(self.suspect_probs)

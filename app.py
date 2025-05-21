@@ -142,43 +142,50 @@ if 'remainder_cards' not in st.session_state:
     st.session_state.remainder_cards = set()
 if 'setup_complete' not in st.session_state:
     st.session_state.setup_complete = False
+if 'cards_confirmed' not in st.session_state:
+    st.session_state.cards_confirmed = False
 
-# Game setup in main area
-st.title("Clue Game Setup")
-
-# Player setup
-col1, col2 = st.columns([2, 1])
-
-with col1:
-    num_players = st.number_input("Number of Players", min_value=3, max_value=6, value=3)
-    players = []
-    # First player is always "You"
-    players.append("You")
-    st.write("**Player 1:** You")
+# Only show setup title and player setup if setup is not complete
+if not st.session_state.setup_complete:
+    st.title("Clue Game Setup")
     
-    # Get names for other players
-    for i in range(1, num_players):
-        player = st.text_input(f"Player {i+1} Name", key=f"player_{i}")
-        if player:
-            players.append(player)
-    
-    if len(players) == num_players:
-        # Calculate remainder cards
-        remainder = ClueGameState.calculate_remainder_cards(num_players)
-        st.write(f"Each player will receive 3 cards")
-        st.write(f"3 cards are set aside as the solution")
-        st.write(f"Remainder cards to be revealed: {remainder}")
+    # Player setup
+    col1, col2 = st.columns([2, 1])
+
+    with col1:
+        num_players = st.number_input("Number of Players", min_value=3, max_value=6, value=3)
+        players = []
+        # First player is always "You"
+        players.append("You")
+        st.write("**Player 1:** You")
         
-        if st.button("Start Game", type="primary"):
-            st.session_state.game_state = ClueGameState(players)
-            st.session_state.setup_complete = True
-            st.success("Game started! Please select your cards below.")
+        # Get names for other players
+        for i in range(1, num_players):
+            player = st.text_input(f"Player {i+1} Name", key=f"player_{i}")
+            if player:
+                players.append(player)
+        
+        if len(players) == num_players:
+            # Calculate remainder cards
+            remainder = ClueGameState.calculate_remainder_cards(num_players)
+            st.write(f"Each player will receive 3 cards")
+            st.write(f"3 cards are set aside as the solution")
+            st.write(f"Remainder cards to be revealed: {remainder}")
+            
+            if st.button("Start Game", type="primary"):
+                st.session_state.game_state = ClueGameState(players)
+                st.session_state.setup_complete = True
+                st.success("Game started! Please select your cards below.")
 
-# Your cards selection (only shown after game start, before remainder cards)
-if st.session_state.setup_complete and not st.session_state.remainder_cards:
+# Your cards selection (only shown after game start, before remainder cards, and before cards are confirmed)
+if st.session_state.setup_complete and not st.session_state.remainder_cards and not st.session_state.cards_confirmed:
     st.divider()
     st.header("Select Your Cards")
     st.write("Please select exactly 3 cards that you have in your hand.")
+    
+    # Initialize confirmed_cards in session state if it doesn't exist
+    if 'confirmed_cards' not in st.session_state:
+        st.session_state.confirmed_cards = set()
     
     # Combine all cards into one list
     all_cards = SUSPECTS + WEAPONS + ROOMS
@@ -188,22 +195,26 @@ if st.session_state.setup_complete and not st.session_state.remainder_cards:
         "Select your 3 cards",
         all_cards,
         max_selections=3,
-        key="your_cards"
+        key="card_selector"
     )
     
     if len(your_cards) == 3:
         if st.button("Confirm Your Cards", type="primary"):
+            # Store your cards in session state with a different key
+            st.session_state.confirmed_cards = set(your_cards)
             # Update game state with your cards
             st.session_state.game_state.known_cards["You"] = set(your_cards)
             # Update global known cards and probability engine
             for card in your_cards:
                 st.session_state.game_state.probability_engine._update_known_card(card)
+            # Mark cards as confirmed
+            st.session_state.cards_confirmed = True
             st.success("Your cards have been recorded! Now select the remainder cards.")
     else:
         st.warning(f"Please select exactly 3 cards (you have selected {len(your_cards)})")
 
-# Remainder card selection (only shown after your cards are selected)
-if st.session_state.setup_complete and not st.session_state.remainder_cards and "You" in st.session_state.game_state.known_cards:
+# Remainder card selection (only shown after your cards are confirmed)
+if st.session_state.setup_complete and not st.session_state.remainder_cards and st.session_state.cards_confirmed:
     st.divider()
     st.header("Select Remainder Cards")
     remainder = ClueGameState.calculate_remainder_cards(len(st.session_state.game_state.players))
@@ -308,20 +319,6 @@ with st.sidebar:
             ]).set_index("Card"))
             # Display as a table
             st.dataframe(room_df)
-        
-        # Most likely solution
-        st.divider()
-        st.subheader("Most Likely Solution")
-        solution = st.session_state.game_state.get_most_likely_solution()
-        for category, card in solution.items():
-            prob = probs[category + "s"][card]  # Add 's' to match dictionary keys
-            st.write(f"**{category}:** {card} ({prob:.1%})")
-        
-        # Confidence indicator
-        if st.session_state.game_state.is_solution_confident():
-            st.success("🎯 High confidence in solution!")
-        else:
-            st.info("🔍 Still gathering evidence...")
 
 # Main game interface (only shown after remainder cards are selected)
 if st.session_state.game_state and st.session_state.remainder_cards:
@@ -333,7 +330,7 @@ if st.session_state.game_state and st.session_state.remainder_cards:
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        suggester = st.selectbox("Who made the suggestion?", players)
+        suggester = st.selectbox("Who made the suggestion?", st.session_state.game_state.players)
         # Filter out remainder cards from suspect options
         available_suspects = [s for s in SUSPECTS if s not in st.session_state.remainder_cards]
         suspect = st.selectbox("Suspect", available_suspects)
@@ -348,7 +345,7 @@ if st.session_state.game_state and st.session_state.remainder_cards:
     
     with col3:
         # Filter out the suggester from possible responders
-        possible_responders = ["None"] + [p for p in players if p != suggester]
+        possible_responders = ["None"] + [p for p in st.session_state.game_state.players if p != suggester]
         responder = st.selectbox("Who responded?", possible_responders)
         
         # Only show card selection if someone responded
@@ -366,7 +363,92 @@ if st.session_state.game_state and st.session_state.remainder_cards:
             shown_card=None if shown_card == "Unknown" else shown_card
         )
         st.success("Suggestion added!")
+
+    # Add probability summary section
+    st.divider()
+    st.subheader("Current Probability Summary")
     
+    # Get probabilities for each category
+    probs = st.session_state.game_state.get_solution_probabilities()
+    
+    # Create three columns for Suspects, Weapons, and Rooms
+    sum_col1, sum_col2, sum_col3 = st.columns(3)
+    
+    with sum_col1:
+        st.markdown("**Suspects**")
+        # Filter out zero probabilities and sort
+        suspect_probs = [(s, p) for s, p in probs["Suspects"].items() if p > 0]
+        suspect_probs.sort(key=lambda x: x[1], reverse=True)
+        
+        # Highest probability suspects
+        st.markdown("""
+        <div style='background-color: rgba(0, 255, 0, 0.1); padding: 10px; border-radius: 5px; margin: 5px 0;'>
+            <span style='color: #00ff00; font-weight: bold;'>Most Likely:</span>
+        """, unsafe_allow_html=True)
+        for suspect, prob in suspect_probs[:2]:  # Show top 2
+            st.markdown(f"- {suspect} ({prob:.1%})", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        # Lowest non-zero probability suspects
+        if len(suspect_probs) >= 2:
+            st.markdown("""
+            <div style='background-color: rgba(255, 0, 0, 0.1); padding: 10px; border-radius: 5px; margin: 5px 0;'>
+                <span style='color: #ff0000; font-weight: bold;'>Least Likely (>0%):</span>
+            """, unsafe_allow_html=True)
+            for suspect, prob in suspect_probs[-2:]:  # Show bottom 2 non-zero
+                st.markdown(f"- {suspect} ({prob:.1%})", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+    
+    with sum_col2:
+        st.markdown("**Weapons**")
+        # Filter out zero probabilities and sort
+        weapon_probs = [(w, p) for w, p in probs["Weapons"].items() if p > 0]
+        weapon_probs.sort(key=lambda x: x[1], reverse=True)
+        
+        # Highest probability weapons
+        st.markdown("""
+        <div style='background-color: rgba(0, 255, 0, 0.1); padding: 10px; border-radius: 5px; margin: 5px 0;'>
+            <span style='color: #00ff00; font-weight: bold;'>Most Likely:</span>
+        """, unsafe_allow_html=True)
+        for weapon, prob in weapon_probs[:2]:  # Show top 2
+            st.markdown(f"- {weapon} ({prob:.1%})", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        # Lowest non-zero probability weapons
+        if len(weapon_probs) >= 2:
+            st.markdown("""
+            <div style='background-color: rgba(255, 0, 0, 0.1); padding: 10px; border-radius: 5px; margin: 5px 0;'>
+                <span style='color: #ff0000; font-weight: bold;'>Least Likely (>0%):</span>
+            """, unsafe_allow_html=True)
+            for weapon, prob in weapon_probs[-2:]:  # Show bottom 2 non-zero
+                st.markdown(f"- {weapon} ({prob:.1%})", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+    
+    with sum_col3:
+        st.markdown("**Rooms**")
+        # Filter out zero probabilities and sort
+        room_probs = [(r, p) for r, p in probs["Rooms"].items() if p > 0]
+        room_probs.sort(key=lambda x: x[1], reverse=True)
+        
+        # Highest probability rooms
+        st.markdown("""
+        <div style='background-color: rgba(0, 255, 0, 0.1); padding: 10px; border-radius: 5px; margin: 5px 0;'>
+            <span style='color: #00ff00; font-weight: bold;'>Most Likely:</span>
+        """, unsafe_allow_html=True)
+        for room, prob in room_probs[:2]:  # Show top 2
+            st.markdown(f"- {room} ({prob:.1%})", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        # Lowest non-zero probability rooms
+        if len(room_probs) >= 2:
+            st.markdown("""
+            <div style='background-color: rgba(255, 0, 0, 0.1); padding: 10px; border-radius: 5px; margin: 5px 0;'>
+                <span style='color: #ff0000; font-weight: bold;'>Least Likely (>0%):</span>
+            """, unsafe_allow_html=True)
+            for room, prob in room_probs[-2:]:  # Show bottom 2 non-zero
+                st.markdown(f"- {room} ({prob:.1%})", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+
     st.divider()
     
     # Game State Display
@@ -377,12 +459,40 @@ if st.session_state.game_state and st.session_state.remainder_cards:
     with col1:
         st.subheader("Player Cards")
         for player in st.session_state.game_state.players:
-            known_cards, cannot_have = st.session_state.game_state.get_player_cards(player)
             st.write(f"**{player}**")
-            if known_cards:
-                st.write("Known cards:", ", ".join(known_cards))
-            if cannot_have:
-                st.write("Cannot have:", ", ".join(cannot_have))
+            
+            # Special display for "You" player
+            if player == "You":
+                if "confirmed_cards" in st.session_state and st.session_state.confirmed_cards:
+                    st.markdown("""
+                    <div style='background-color: rgba(0, 191, 255, 0.1); padding: 10px; border-radius: 5px; margin: 5px 0;'>
+                        <span style='color: #00bfff; font-weight: bold;'>Your Cards:</span>
+                    """, unsafe_allow_html=True)
+                    st.markdown("- " + "<br>- ".join(sorted(st.session_state.confirmed_cards)), unsafe_allow_html=True)
+                    st.markdown("</div>", unsafe_allow_html=True)
+            
+            # Add high probability cards section with green highlighting
+            high_prob_cards = st.session_state.game_state.player_tracker.get_high_probability_cards(player)
+            if high_prob_cards:
+                st.markdown("""
+                <div style='background-color: rgba(0, 255, 0, 0.1); padding: 10px; border-radius: 5px; margin: 5px 0;'>
+                    <span style='color: #00ff00; font-weight: bold;'>High Probability Cards:</span>
+                """, unsafe_allow_html=True)
+                for card, prob in high_prob_cards:
+                    st.markdown(f"- {card} ({prob:.1%})", unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True)
+            
+            # Display cannot-have cards in red (except for "You" player)
+            if player != "You":
+                cannot_have = st.session_state.game_state.player_tracker.get_cannot_have_cards(player)
+                if cannot_have:
+                    st.markdown("""
+                    <div style='background-color: rgba(255, 0, 0, 0.1); padding: 10px; border-radius: 5px; margin: 5px 0;'>
+                        <span style='color: #ff0000; font-weight: bold;'>Cannot Have:</span>
+                    """, unsafe_allow_html=True)
+                    st.markdown("- " + "<br>- ".join(sorted(cannot_have)), unsafe_allow_html=True)
+                    st.markdown("</div>", unsafe_allow_html=True)
+            
             st.write("---")
         
         # Display global known cards

@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import numpy as np
 from clue_probability import ClueProbabilityEngine
+from player_card_tracker import PlayerCardTracker
 from clue_constants import SUSPECTS, WEAPONS, ROOMS
 
 #define suggestion dataclass (list of strings)
@@ -34,6 +35,12 @@ class ClueGameState:
         self.suggestions: List[Suggestion] = []
         self.soft_beliefs: Dict[str, Dict[str, float]] = {player: {} for player in players}
         self.probability_engine = ClueProbabilityEngine()
+        
+        # Initialize player card tracker
+        all_cards = SUSPECTS + WEAPONS + ROOMS
+        hand_sizes = {player: 3 for player in players}  # Each player starts with 3 cards
+        self.player_tracker = PlayerCardTracker(players, all_cards, hand_sizes)
+        
         self.remainder_cards: Set[str] = set()
         self.global_known_cards: Set[str] = set()  # Track all known cards globally
 
@@ -77,6 +84,16 @@ class ClueGameState:
             shown_card=shown_card
         )
         self.suggestions.append(suggestion)
+        
+        # Update player card tracker
+        suggested_cards = [suspect, weapon, room]
+        self.player_tracker.update_from_suggestion(
+            suggested_cards=suggested_cards,
+            suggesting_player=suggester,
+            responder=responder,
+            shown_card=shown_card,
+            players_in_order=self.players
+        )
         
         # Get the order of players after the suggester
         suggester_index = self.players.index(suggester)
