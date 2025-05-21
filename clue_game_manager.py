@@ -20,7 +20,7 @@ class Suggestion:
     shown_card: Optional[str]
 
 #create initial game state
-class ClueGameState:
+class ClueGameManager:
     
     #initialize game state
     def __init__(self, players: List[str]):

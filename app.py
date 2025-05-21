@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 import base64
 from pathlib import Path
-from clue_game import ClueGameState
+from clue_game_manager import ClueGameManager
 from clue_constants import SUSPECTS, WEAPONS, ROOMS
 
 def get_base64_encoded_image(image_path):
@@ -167,13 +167,13 @@ if not st.session_state.setup_complete:
         
         if len(players) == num_players:
             # Calculate remainder cards
-            remainder = ClueGameState.calculate_remainder_cards(num_players)
+            remainder = ClueGameManager.calculate_remainder_cards(num_players)
             st.write(f"Each player will receive 3 cards")
             st.write(f"3 cards are set aside as the solution")
             st.write(f"Remainder cards to be revealed: {remainder}")
             
             if st.button("Start Game", type="primary"):
-                st.session_state.game_state = ClueGameState(players)
+                st.session_state.game_state = ClueGameManager(players)
                 st.session_state.setup_complete = True
                 st.success("Game started! Please select your cards below.")
 
@@ -217,7 +217,7 @@ if st.session_state.setup_complete and not st.session_state.remainder_cards and 
 if st.session_state.setup_complete and not st.session_state.remainder_cards and st.session_state.cards_confirmed:
     st.divider()
     st.header("Select Remainder Cards")
-    remainder = ClueGameState.calculate_remainder_cards(len(st.session_state.game_state.players))
+    remainder = ClueGameManager.calculate_remainder_cards(len(st.session_state.game_state.players))
     
     if remainder > 0:
         # Get your cards to exclude from remainder selection
