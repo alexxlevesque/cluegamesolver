@@ -4,7 +4,7 @@ from typing import Dict, List, Set, Optional, Tuple
 from dataclasses import dataclass
 from datetime import datetime
 import numpy as np
-from clue_probability import ClueProbabilityEngine
+from envelope_probability_engine import EnvelopeProbabilityEngine
 from player_card_tracker import PlayerCardTracker
 from clue_constants import SUSPECTS, WEAPONS, ROOMS
 
@@ -34,12 +34,12 @@ class ClueGameState:
         self.cannot_have: Dict[str, Set[str]] = {player: set() for player in players}
         self.suggestions: List[Suggestion] = []
         self.soft_beliefs: Dict[str, Dict[str, float]] = {player: {} for player in players}
-        self.probability_engine = ClueProbabilityEngine()
+        self.probability_engine = EnvelopeProbabilityEngine()
         
         # Initialize player card tracker
         all_cards = SUSPECTS + WEAPONS + ROOMS
         hand_sizes = {player: 3 for player in players}  # Each player starts with 3 cards
-        self.player_tracker = PlayerCardTracker(players, all_cards, hand_sizes)
+        self.player_card_tracker = PlayerCardTracker(players, all_cards, hand_sizes)
         
         self.remainder_cards: Set[str] = set()
         self.global_known_cards: Set[str] = set()  # Track all known cards globally
@@ -87,7 +87,7 @@ class ClueGameState:
         
         # Update player card tracker
         suggested_cards = [suspect, weapon, room]
-        self.player_tracker.update_from_suggestion(
+        self.player_card_tracker.update_from_suggestion(
             suggested_cards=suggested_cards,
             suggesting_player=suggester,
             responder=responder,

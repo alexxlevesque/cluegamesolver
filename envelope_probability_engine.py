@@ -2,7 +2,7 @@ from typing import Dict, List, Set, Optional
 import numpy as np
 from clue_constants import SUSPECTS, WEAPONS, ROOMS
 
-class ClueProbabilityEngine:
+class EnvelopeProbabilityEngine:
     def __init__(self):
         # Initialize probabilities for each category
         self.suspect_probs = self._initialize_category_probs(SUSPECTS)
