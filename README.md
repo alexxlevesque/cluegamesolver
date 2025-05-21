@@ -16,14 +16,28 @@ Inspired by probabilistic models in finance, AI, and information theory, the sys
 
 ---
 
-## 🧩 Key Features
+## 🧩 Key Components
 
-- ✅ **Bayesian probability engine** that updates card likelihoods in real time  
-- ✅ **Dynamic game state tracking** for all players and cards  
-- ✅ **Soft and hard evidence inference** from responses and shown cards  
-- ✅ **Monte Carlo simulation** for posterior estimation under uncertainty (coming soon)  
-- ✅ **Suggestion optimizer** that recommends the next best move based on info gain (planned)  
-- ✅ **Streamlit interface** for interactive probability tracking and suggestion logging
+### EnvelopeProbabilityEngine
+- Tracks and updates probabilities for cards in the solution envelope
+- Implements Bayesian inference for solution prediction
+- Maintains separate probability distributions for suspects, weapons, and rooms
+
+### PlayerCardTracker
+- Tracks probabilities of cards for each player
+- Updates beliefs based on suggestions and responses
+- Maintains known cards and "cannot have" sets for each player
+
+### ClueGameManager
+- Orchestrates game state and player interactions
+- Manages suggestion history and global known cards
+- Integrates probability engines for comprehensive game analysis
+
+### Streamlit Interface
+- Real-time probability visualization
+- Interactive suggestion logging
+- Player card management
+- Beautiful, modern UI with intuitive controls
 
 ---
 
@@ -41,7 +55,7 @@ $$
 | -------------------------- | ----------------------------------- | ----------------------------------------------------- |
 | Player shows a known card  | Card is not in the envelope         | Set $P(C) = 0$, renormalize                           |
 | Player shows a hidden card | One of 3 suggested cards is in hand | Multiply each $P(C)$ by **DecreaseFactor** (e.g. 0.8) |
-| No one can refute          | All 3 cards are in envelope (unless the suggestor was bluffing, and has the suggested cards in his own hand) | Multiply each $P(C)$ by **IncreaseFactor** (e.g. 2.0) |
+| No one can refute          | All 3 cards MUST be in envelope     | Set $P(C) = 1.0$ for suggested cards, $0.0$ for others |
 
 ### Normalization (per category):
 
@@ -56,39 +70,33 @@ This ensures that suspect, weapon, and room probabilities each sum to 1.
 
 ---
 
-## 💡 Example: Someone Refutes Suggestion (But You Don’t See the Card)
+## 💡 Example: No One Can Refute a Suggestion
 
 **Suggestion:** Miss Scarlett, Lead Pipe, Study
 
-**Player B refutes**, but shows the card to someone else (you don’t see it).
+**No one can refute** - this means these cards MUST be in the envelope!
 
-**Update strategy:** Multiply each of the 3 suggested cards by `DecreaseFactor = 0.8`, then normalize.
+**Update strategy:** Set probability to 1.0 for suggested cards, 0.0 for all others
 
 ```python
 # Before
-Scarlett = 0.167
+Scarlett = 0.167  # Equal probability for all cards
 Pipe     = 0.167
 Study    = 0.167
 
-# After multiply (DecreaseFactor = 0.8)
-Scarlett = 0.133
-Pipe     = 0.133
-Study    = 0.133
+# After (100% certainty)
+Scarlett = 1.0    # Must be in envelope
+Pipe     = 1.0    # Must be in envelope
+Study    = 1.0    # Must be in envelope
 
-# Assume other 5 suspects still at 0.167 each
-Total (Suspects) = 0.133 + (5 × 0.167) = 0.968
-
-# Normalized (Suspects)
-Scarlett = 0.133 / 0.968 ≈ 0.137
-Others   = 0.167 / 0.968 ≈ 0.172
-
-# Repeat same normalization for Weapons and Rooms
+# All other cards in each category
+Others   = 0.0    # Cannot be in envelope
 ```
 
 The result:
-
-* Suggested cards become slightly **less likely** to be in the envelope
-* Non-suggested cards become slightly **more likely** (due to normalization)
+* Suggested cards are now **certain** to be in the envelope
+* All other cards are **certain** to not be in the envelope
+* Game is effectively solved!
 
 ---
 
@@ -114,8 +122,8 @@ The result:
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/yourname/clue-bayesian-engine.git
-cd clue-bayesian-engine
+git clone https://github.com/alexxlevesque/cluegamesolver.git
+cd cluegamesolver
 
 # 2. Install dependencies
 pip install -r requirements.txt
