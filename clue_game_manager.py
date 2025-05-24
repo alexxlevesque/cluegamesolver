@@ -4,7 +4,8 @@ from typing import Dict, List, Set, Optional, Tuple
 from dataclasses import dataclass
 from datetime import datetime
 import numpy as np
-from envelope_probability_engine import EnvelopeProbabilityEngine
+from engines.envelope_probability_engine import EnvelopeProbabilityEngine
+from engines.rule_based_inference_engine import RuleBasedInferenceEngine
 from player_card_tracker import PlayerCardTracker
 from clue_constants import SUSPECTS, WEAPONS, ROOMS
 
@@ -34,12 +35,15 @@ class ClueGameManager:
         self.cannot_have: Dict[str, Set[str]] = {player: set() for player in players}
         self.suggestions: List[Suggestion] = []
         self.soft_beliefs: Dict[str, Dict[str, float]] = {player: {} for player in players}
-        self.probability_engine = EnvelopeProbabilityEngine()
         
         # Initialize player card tracker
         all_cards = SUSPECTS + WEAPONS + ROOMS
         hand_sizes = {player: 3 for player in players}  # Each player starts with 3 cards
         self.player_card_tracker = PlayerCardTracker(players, all_cards, hand_sizes)
+        
+        # Initialize inference engines
+        self.probability_engine = EnvelopeProbabilityEngine()
+        self.rule_engine = RuleBasedInferenceEngine(self.player_card_tracker)
         
         self.remainder_cards: Set[str] = set()
         self.global_known_cards: Set[str] = set()  # Track all known cards globally
@@ -85,8 +89,10 @@ class ClueGameManager:
         )
         self.suggestions.append(suggestion)
         
-        # Update player card tracker
+        # Create list of suggested cards
         suggested_cards = [suspect, weapon, room]
+        
+        # Update player card tracker
         self.player_card_tracker.update_from_suggestion(
             suggested_cards=suggested_cards,
             suggesting_player=suggester,
@@ -94,6 +100,16 @@ class ClueGameManager:
             shown_card=shown_card,
             players_in_order=self.players
         )
+        
+        # Update rule-based inference engine
+        self.rule_engine.record_suggestion(
+            suggester=suggester,
+            suggested_cards=suggested_cards,
+            responder=responder,
+            shown_card=shown_card
+        )
+        # Apply rule-based inference after recording
+        self.rule_engine.apply_inference()
         
         # Get the order of players after the suggester
         suggester_index = self.players.index(suggester)

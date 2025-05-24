@@ -472,7 +472,7 @@ if st.session_state.game_state and st.session_state.remainder_cards:
                     st.markdown("</div>", unsafe_allow_html=True)
             
             # Add high probability cards section with green highlighting
-            high_prob_cards = st.session_state.game_state.player_tracker.get_high_probability_cards(player)
+            high_prob_cards = st.session_state.game_state.player_card_tracker.get_high_probability_cards(player)
             if high_prob_cards:
                 st.markdown("""
                 <div style='background-color: rgba(0, 255, 0, 0.1); padding: 10px; border-radius: 5px; margin: 5px 0;'>
@@ -484,7 +484,7 @@ if st.session_state.game_state and st.session_state.remainder_cards:
             
             # Display cannot-have cards in red (except for "You" player)
             if player != "You":
-                cannot_have = st.session_state.game_state.player_tracker.get_cannot_have_cards(player)
+                cannot_have = st.session_state.game_state.player_card_tracker.get_cannot_have_cards(player)
                 if cannot_have:
                     st.markdown("""
                     <div style='background-color: rgba(255, 0, 0, 0.1); padding: 10px; border-radius: 5px; margin: 5px 0;'>

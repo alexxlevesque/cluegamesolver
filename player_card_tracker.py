@@ -178,4 +178,16 @@ class PlayerCardTracker:
         for card, prob in self.player_card_probs[player].items():
             if prob >= threshold:
                 high_prob_cards.append((card, prob))
-        return sorted(high_prob_cards, key=lambda x: x[1], reverse=True) 
+        return sorted(high_prob_cards, key=lambda x: x[1], reverse=True)
+
+    def increase_prob(self, player: str, card: str, amount: float) -> None:
+        """Increase the probability of a player having a card by the specified amount.
+        
+        Args:
+            player: The player to update probability for
+            card: The card to update probability for
+            amount: Amount to increase probability by
+        """
+        current = self.player_card_probs[player][card]
+        self.player_card_probs[player][card] = min(current + amount, 1.0)
+        self._normalize_probabilities() 
