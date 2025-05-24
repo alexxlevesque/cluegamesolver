@@ -177,7 +177,7 @@ if not st.session_state.setup_complete:
                 st.session_state.setup_complete = True
                 st.success("Game started! Please select your cards below.")
 
-# Your cards selection (only shown after game start, before remainder cards, and before cards are confirmed)
+# Your cards selection
 if st.session_state.setup_complete and not st.session_state.remainder_cards and not st.session_state.cards_confirmed:
     st.divider()
     st.header("Select Your Cards")

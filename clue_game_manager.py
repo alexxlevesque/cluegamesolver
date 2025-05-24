@@ -1,4 +1,3 @@
-#annotate types from python 3.11
 #import necessary libraries
 from typing import Dict, List, Set, Optional, Tuple
 from dataclasses import dataclass
@@ -53,31 +52,28 @@ class ClueGameManager:
         for player in players:
             self.soft_beliefs[player] = {card: 1.0 for card in all_cards}
 
+    # calculate the number of remainder cards after dealing 3 to each player and setting aside solution cards
     @staticmethod
     def calculate_remainder_cards(num_players: int) -> int:
-        """Calculate number of remainder cards after dealing 3 to each player and setting aside solution cards."""
         total_cards = len(SUSPECTS) + len(WEAPONS) + len(ROOMS)  # 21 cards total
         solution_cards = 3  # 1 suspect, 1 weapon, 1 room
         dealt_cards = num_players * 3  # Each player gets exactly 3 cards
         remainder = total_cards - solution_cards - dealt_cards
         return max(0, remainder)  # Ensure we don't return a negative number
     
+    # update the global known cards list and probability engine
     def _update_global_known_cards(self, card: str) -> None:
-        """Update the global known cards list and probability engine."""
         self.global_known_cards.add(card)
         self.probability_engine._update_known_card(card)
     
     def set_remainder_cards(self, cards: Set[str]) -> None:
-        """Set the remainder cards that are revealed to all players."""
         self.remainder_cards = cards
-        # Update global known cards
         for card in cards:
             self._update_global_known_cards(card)
 
     # add suggestion logic, called every time a suggestion is made
     def add_suggestion(self, suggester: str, suspect: str, weapon: str, room: str,
                       responder: Optional[str], shown_card: Optional[str]) -> None:
-        """Record a new suggestion and update game state."""
         suggestion = Suggestion(
             timestamp=datetime.now(),
             suggester=suggester,
@@ -170,19 +166,19 @@ class ClueGameManager:
     def get_soft_beliefs(self, player: str) -> Dict[str, float]:
         return self.soft_beliefs[player]
     
+    # returns the current probabilities for each category
     def get_solution_probabilities(self) -> Dict[str, Dict[str, float]]:
-        """Get current probabilities for each category."""
         return self.probability_engine.get_solution_probabilities()
     
+    # returns the most likely solution based on current probabilities
     def get_most_likely_solution(self) -> Dict[str, str]:
-        """Get the most likely solution based on current probabilities."""
         return self.probability_engine.get_most_likely_solution()
     
+    # returns true if the solution is confident
     def is_solution_confident(self, threshold: float = 0.9) -> bool:
-        """Check if we have a confident solution."""
         return self.probability_engine.is_solution_confident(threshold)
 
+    # returns the set of all known cards in the game
     def get_global_known_cards(self) -> Set[str]:
-        """Get the set of all known cards in the game."""
         return self.global_known_cards
 

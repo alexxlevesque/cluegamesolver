@@ -2,15 +2,9 @@ from typing import Dict, List, Optional, Set
 import numpy as np
 from clue_constants import SUSPECTS, WEAPONS, ROOMS
 
+# track the probability of each card for each player
 class PlayerCardTracker:
     def __init__(self, players: List[str], cards: List[str], hand_sizes: Dict[str, int]):
-        """Initialize the player card probability tracker.
-        
-        Args:
-            players: List of player names
-            cards: List of all cards in the game
-            hand_sizes: Dictionary mapping player names to their known hand sizes
-        """
         self.players = players
         self.cards = cards
         self.hand_sizes = hand_sizes
@@ -32,11 +26,10 @@ class PlayerCardTracker:
         # Track cards that players definitely don't have
         self.cannot_have: Dict[str, Set[str]] = {player: set() for player in players}
 
+    # normalize the probabilities to ensure constraints are met:
+    # 1. For each card, sum of probabilities across players <= 1.0
+    # 2. For each player, weighted sum of probabilities <= hand_size
     def _normalize_probabilities(self) -> None:
-        """Normalize probabilities to ensure constraints are met:
-        1. For each card, sum of probabilities across players <= 1.0
-        2. For each player, weighted sum of probabilities <= hand_size
-        """
         # First normalize each card's probabilities across players
         for card in self.cards:
             total = sum(self.player_card_probs[player][card] for player in self.players)
@@ -60,15 +53,6 @@ class PlayerCardTracker:
                              responder: Optional[str],
                              shown_card: Optional[str],
                              players_in_order: List[str]) -> None:
-        """Update probabilities based on a suggestion and its response.
-        
-        Args:
-            suggested_cards: List of 3 cards that were suggested
-            suggesting_player: Player who made the suggestion
-            responder: Player who showed a card (or None if no one could)
-            shown_card: The specific card shown (or None if unknown)
-            players_in_order: Players in clockwise order from suggester
-        """
         # Case 1: Known card was shown
         if responder and shown_card:
             # Set probability to 1.0 for responder, 0.0 for others
@@ -116,16 +100,12 @@ class PlayerCardTracker:
         # Normalize probabilities after updates
         self._normalize_probabilities()
 
+    # returns the current probability matrix
     def get_prob_matrix(self) -> Dict[str, Dict[str, float]]:
-        """Return the current probability matrix."""
         return self.player_card_probs
 
+    # returns the probability of each card being in the envelope
     def get_envelope_probabilities(self) -> Dict[str, float]:
-        """Calculate probability of each card being in the envelope.
-        
-        Returns:
-            Dictionary mapping cards to their envelope probabilities.
-        """
         envelope_probs = {}
         for card in self.cards:
             # P(envelope) = 1 - sum(P(player_i has card))
@@ -134,12 +114,12 @@ class PlayerCardTracker:
             envelope_probs[card] = max(0.0, 1.0 - total_player_prob)
         return envelope_probs
 
+    # returns the probability of a specific player having a specific card
     def get_player_card_probability(self, player: str, card: str) -> float:
-        """Get the probability that a specific player has a specific card."""
         return self.player_card_probs[player][card]
-
+    
+    # marks a card as definitely held by a player
     def mark_known_card(self, player: str, card: str) -> None:
-        """Mark a card as definitely held by a player."""
         # Set probability to 1.0 for this player, 0.0 for others
         for p in self.players:
             if p == player:
@@ -151,43 +131,25 @@ class PlayerCardTracker:
         
         self._normalize_probabilities()
 
+    # returns the n most likely cards for a player
     def get_most_likely_cards(self, player: str, n: int = 3) -> List[tuple[str, float]]:
-        """Get the n most likely cards for a player.
-        
-        Returns:
-            List of (card, probability) tuples, sorted by probability.
-        """
         probs = self.player_card_probs[player]
         return sorted(probs.items(), key=lambda x: x[1], reverse=True)[:n]
 
+    # returns the set of cards that a player definitely doesn't have
     def get_cannot_have_cards(self, player: str) -> Set[str]:
-        """Get the set of cards that a player definitely doesn't have."""
         return self.cannot_have[player]
 
+    # returns the cards that have probability above the threshold for a player
     def get_high_probability_cards(self, player: str, threshold: float = 0.9) -> List[tuple[str, float]]:
-        """Get cards that have probability above the threshold for a player.
-        
-        Args:
-            player: The player to check
-            threshold: Probability threshold (default 0.9)
-            
-        Returns:
-            List of (card, probability) tuples for cards above threshold
-        """
         high_prob_cards = []
         for card, prob in self.player_card_probs[player].items():
             if prob >= threshold:
                 high_prob_cards.append((card, prob))
         return sorted(high_prob_cards, key=lambda x: x[1], reverse=True)
 
+    # increases the probability of a player having a card by a specified amount
     def increase_prob(self, player: str, card: str, amount: float) -> None:
-        """Increase the probability of a player having a card by the specified amount.
-        
-        Args:
-            player: The player to update probability for
-            card: The card to update probability for
-            amount: Amount to increase probability by
-        """
         current = self.player_card_probs[player][card]
         self.player_card_probs[player][card] = min(current + amount, 1.0)
         self._normalize_probabilities() 
