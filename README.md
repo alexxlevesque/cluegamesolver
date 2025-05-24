@@ -1,6 +1,6 @@
 # 🔍 Bayesian Clue Solver
 
-Real-time probabilistic inference engines designed to beat the game of *Clue* using Bayesian reasoning, soft constraint propagation, and dynamic suggestion tracking. The main engine is built to calculate the likelihood of each card being in the murder envelope — and eventually recommend the optimal next move based on current information. Other engines are built on human behavior and scenarios to calculate the likelihood of each card being in each player's hand.
+A sophisticated Clue game assistant that uses Bayesian reasoning and probabilistic inference to help players track game state, calculate probabilities, and make optimal suggestions. The system provides real-time probability updates for cards in the murder envelope and player hands, helping you solve the mystery faster and more effectively.
 
 ---
 
@@ -44,25 +44,28 @@ Inspired by probabilistic models in finance, AI, and information theory, the sys
 
 ## Other Key Components
 
-### PlayerCardTracker
-- Tracks probabilities of cards for each player
-- Updates beliefs based on suggestions and responses
-- Maintains known cards and "cannot have" sets for each player
+## How It Works
 
-### ClueGameManager
-- Orchestrates game state and player interactions
-- Manages suggestion history and global known cards
-- Integrates probability engines for comprehensive game analysis
+The system uses Bayesian inference to update probabilities based on game events:
 
-### Streamlit Interface
-- Real-time probability visualization
-- Interactive suggestion logging
-- Player card management
-- Beautiful, modern UI with intuitive controls
+1. **Initial Setup**
+   - Enter number of players (3-6)
+   - Select your cards
+   - System calculates initial probabilities
 
----
+2. **During Gameplay**
+   - Log suggestions and responses
+   - System updates probabilities in real-time
+   - View probability distributions for envelope and player cards
+   - Get suggestions for optimal next moves
 
-## How the Envelope Probability Engine Works
+3. **Probability Updates**
+   - When a card is shown: Eliminates it from envelope possibilities
+   - When no one can refute: Increases probability of suggested cards
+   - When a player shows a card: Updates player card probabilities
+   - All probabilities are normalized within their categories (suspects, weapons, rooms)
+
+## How It Works:
 
 For each card $C$, we estimate:
 
@@ -119,14 +122,21 @@ The result:
 * All other cards are **certain** to not be in the envelope
 * Game is effectively solved!
 
----
+1. **Game Setup**
+   - Enter the number of players (3-6)
+   - Name each player
+   - Select your three cards
 
-## Future Work
+2. **During the Game**
+   - Log each suggestion made
+   - Record which player showed a card
+   - Note when no one can refute
+   - View updated probabilities in real-time
 
-* Monte Carlo simulation of possible world states consistent with history
-* AI assistant that chooses the optimal next suggestion based on expected entropy reduction
-* Suggestion effectiveness graph (turns vs. confidence curve)
-* Multiplayer interface or Discord bot integration
+3. **Making Suggestions**
+   - Use the probability distributions to guide your suggestions
+   - Focus on cards with high envelope probabilities
+   - Consider player card probabilities to maximize information gain
 
 ---
 
@@ -159,3 +169,5 @@ streamlit run app.py
 MIT License
 
 ---
+
+*Built with ❤️ for Clue enthusiasts everywhere*
