@@ -30,9 +30,6 @@ Inspired by probabilistic models in finance, AI, and information theory, the sys
   
   - `rule_based_inference_engine.py`  
     Applies rules like repeated refutations implying ownership.
-  
-  - `suggestion_pattern_engine.py`  
-    Analyzes player suggestion patterns to infer ownership.
 
 - `trackers/`  
   Components that maintain and update probabilistic knowledge:
@@ -57,7 +54,7 @@ The system uses Bayesian inference to update probabilities based on game events:
    - Log suggestions and responses
    - System updates probabilities in real-time
    - View probability distributions for envelope and player cards
-   - Get suggestions for optimal next moves
+   - Get probability-based suggestions for optimal next moves
 
 3. **Probability Updates**
    - When a card is shown: Eliminates it from envelope possibilities
@@ -121,22 +118,6 @@ The result:
 * Suggested cards are now **certain** to be in the envelope
 * All other cards are **certain** to not be in the envelope
 * Game is effectively solved!
-
-1. **Game Setup**
-   - Enter the number of players (3-6)
-   - Name each player
-   - Select your three cards
-
-2. **During the Game**
-   - Log each suggestion made
-   - Record which player showed a card
-   - Note when no one can refute
-   - View updated probabilities in real-time
-
-3. **Making Suggestions**
-   - Use the probability distributions to guide your suggestions
-   - Focus on cards with high envelope probabilities
-   - Consider player card probabilities to maximize information gain
 
 ---
 
