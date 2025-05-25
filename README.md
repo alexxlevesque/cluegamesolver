@@ -17,27 +17,18 @@ Inspired by probabilistic models in finance, AI, and information theory, the sys
 
 ---
 
+
+
 ## Project Structure
 
-- `clue_game.py`  
-  Main game loop and orchestrator. Integrates all logic engines and trackers.
-
-- `engines/`  
-  Logic engines that analyze game events and generate inferences:
-  
-  - `envelope_probability_engine.py`  
-    Maintains probability distribution over cards in the envelope.
-  
-  - `rule_based_inference_engine.py`  
-    Applies rules like repeated refutations implying ownership.
-
-- `trackers/`  
-  Components that maintain and update probabilistic knowledge:
-  
-  - `player_card_tracker.py`  
-    Tracks probability distribution of each player holding each card.
-
----
+```
+├── clue_game.py              # Main game loop and orchestrator
+├── engines/                  # Core logic engines
+│   ├── envelope_probability_engine.py   # Maintains probability distribution over envelope cards
+│   └── rule_based_inference_engine.py   # Applies deduction rules
+├── trackers/                 # Probabilistic knowledge trackers
+│   └── player_card_tracker.py           # Tracks probability of each player holding each card
+```
 
 ## Other Key Components
 
