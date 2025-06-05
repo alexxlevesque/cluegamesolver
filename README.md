@@ -2,6 +2,8 @@
 
 A sophisticated Clue game assistant that uses Bayesian reasoning and probabilistic inference to help players track game state, calculate probabilities, and make optimal suggestions. The system provides real-time probability updates for cards in the murder envelope and player hands, helping you solve the mystery faster and more effectively.
 
+While this project currently serves mostly as a tracker/assistant while playing, I have plans for it to give suggested accusations, to have more in-depth probabilistic reasoning, and to implement more engines.
+
 ---
 
 ## Main Engine Overview (envelope_probability_engine)
@@ -139,7 +141,3 @@ streamlit run app.py
 ## License
 
 MIT License
-
----
-
-*Built with ❤️ for Clue enthusiasts everywhere*
